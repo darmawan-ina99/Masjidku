@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masjidku 🕌 — Tata Kelola Keuangan & Jadwal Jumat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- LOADING SCREEN -->
+  <div id="loading-screen">
+    <div class="loader-icon">🕌</div>
+    <div class="loader-text">Memuat Masjidku...</div>
+    <div class="loader-sub">Menghubungkan ke server</div>
+  </div>
+
+  <noscript>
+    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;display:flex;align-items:center;justify-content:center;color:#333;font-size:1.2rem;text-align:center;padding:20px;">
+      ⚠️ Aplikasi ini membutuhkan JavaScript. Aktifkan JavaScript di browser Anda.
+    </div>
+  </noscript>
+
+  <div class="app">
+    <header>
+      <h1>🕌 <span id="header-nama">Masjidku</span></h1>
+      <p class="subtitle" id="header-alamat">Tata Kelola Keuangan & Jadwal Jumat</p>
+      <div class="live-badge">🟢 LIVE · Multi Perangkat</div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" role="tab" aria-selected="true" onclick="showTab('beranda',this)">🏠 Beranda</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="showTab('jadwal',this)">📅 Jadwal Jumat</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="showTab('keuangan',this)">💰 Keuangan</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="showTab('admin',this)">🔑 Admin</button>
+    </nav>
+
+    <!-- BERANDA -->
+    <section id="tab-beranda" class="tab-content active" role="tabpanel">
+      <div class="card announcement-card" id="kartu-jumat">
+        <h2>📣 Pengumuman Jumat Ini</h2>
+        <div id="jumat-ini"><p class="empty">Belum ada jadwal. Admin dapat menambahkannya di tab Jadwal Jumat.</p></div>
+      </div>
+
+      <div class="card">
+        <h2>🕌 Profil Masjid</h2>
+        <div class="info-grid">
+          <div class="info-box"><span class="label">Nama Masjid</span><span class="value" id="info-nama">—</span></div>
+          <div class="info-box"><span class="label">Marbot</span><span class="value" id="info-marbot">—</span></div>
+          <div class="info-box wide"><span class="label">Alamat</span><span class="value small" id="info-alamat">—</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📊 Ringkasan Keuangan (Infaq & Shodaqoh Jumat)</h2>
+        <div class="info-grid">
+          <div class="info-box"><span class="label">Total Infaq</span><span class="value green" id="info-infaq">Rp 0</span></div>
+          <div class="info-box"><span class="label">Total Shodaqoh</span><span class="value green" id="info-shodaqoh">Rp 0</span></div>
+          <div class="info-box wide"><span class="label">Total Keseluruhan</span><span class="value green big" id="info-total">Rp 0</span></div>
+        </div>
+        <p class="hint-text" id="info-jumlah-jumat">Belum ada catatan Jumat</p>
+      </div>
+    </section>
+
+    <!-- JADWAL JUMAT -->
+    <section id="tab-jadwal" class="tab-content" role="tabpanel">
+      <div id="form-jadwal-admin" class="card admin-form hidden">
+        <h2>➕ Tambah / Update Jadwal Jumat</h2>
+        <label for="jdwl-tanggal">Tanggal Jumat</label>
+        <input type="date" id="jdwl-tanggal" />
+        <label for="jdwl-imam">Imam Bertugas</label>
+        <input type="text" id="jdwl-imam" placeholder="Contoh: Ust. Ahmad Fauzi" />
+        <label for="jdwl-khotib">Khotib Bertugas</label>
+        <input type="text" id="jdwl-khotib" placeholder="Contoh: Ust. Abdullah Hakim" />
+        <label for="jdwl-pengumuman">Pengumuman Tambahan (opsional)</label>
+        <input type="text" id="jdwl-pengumuman" placeholder="Contoh: Kajian ba'da Ashar, jangan lupa hadir" />
+        <button type="button" class="btn-primary" onclick="simpanJadwal()">💾 Simpan Jadwal</button>
+      </div>
+
+      <div class="card">
+        <h2>📅 Jadwal Imam & Khotib per Jumat</h2>
+        <div id="list-jadwal"><p class="empty">Memuat...</p></div>
+      </div>
+    </section>
+
+    <!-- KEUANGAN -->
+    <section id="tab-keuangan" class="tab-content" role="tabpanel">
+      <div id="form-infaq-admin" class="card admin-form hidden">
+        <h2>➕ Catat Pendapatan Jumat</h2>
+        <label for="infaq-tanggal">Tanggal Jumat</label>
+        <input type="date" id="infaq-tanggal" />
+        <label for="infaq-nominal">Infaq (Rp)</label>
+        <input type="number" id="infaq-nominal" placeholder="500000" min="0" />
+        <label for="shodaqoh-nominal">Shodaqoh (Rp)</label>
+        <input type="number" id="shodaqoh-nominal" placeholder="250000" min="0" />
+        <label for="infaq-catatan">Catatan (opsional)</label>
+        <input type="text" id="infaq-catatan" placeholder="Contoh: kotak amal 1 & 2" />
+        <button type="button" class="btn-primary" onclick="simpanInfaq()">💾 Simpan Catatan</button>
+      </div>
+
+      <div class="card">
+        <h2>💰 Rekap per Bulan</h2>
+        <div id="rekap-bulanan"><p class="empty">Memuat...</p></div>
+      </div>
+
+      <div class="card">
+        <h2>📋 Riwayat Pendapatan Jumat</h2>
+        <div id="list-infaq"><p class="empty">Memuat...</p></div>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="tab-admin" class="tab-content" role="tabpanel">
+      <div class="card" id="card-login">
+        <h2>🔑 Login Admin</h2>
+        <p class="hint-text">Masukkan PIN admin untuk mengelola masjid.</p>
+        <input type="password" id="pin-input" placeholder="PIN Admin" inputmode="numeric" maxlength="8" />
+        <button type="button" class="btn-primary" onclick="loginAdmin()">🔓 Masuk</button>
+        <p class="error-text hidden" id="login-error">PIN salah, coba lagi.</p>
+      </div>
+
+      <div class="card hidden" id="card-setting">
+        <h2>⚙️ Pengaturan Masjid</h2>
+        <label for="set-nama">Nama Masjid</label>
+        <input type="text" id="set-nama" placeholder="Contoh: Masjid Al-Ikhlas" />
+        <label for="set-alamat">Alamat</label>
+        <input type="text" id="set-alamat" placeholder="Contoh: Jl. Mesjid No. 10, Desa Sriamur" />
+        <label for="set-marbot">Nama Marbot</label>
+        <input type="text" id="set-marbot" placeholder="Contoh: Bapak Suharto" />
+        <label for="set-pin-baru">Ganti PIN (opsional, min. 4 angka)</label>
+        <input type="password" id="set-pin-baru" placeholder="Biarkan kosong jika tidak diganti" inputmode="numeric" maxlength="8" />
+        <button type="button" class="btn-primary" onclick="simpanProfil()">💾 Simpan Pengaturan</button>
+        <button type="button" class="btn-secondary" onclick="logoutAdmin()">🚪 Keluar Admin</button>
+      </div>
+    </section>
+
+    <footer>
+      <p>Masjidku · Dikelola dengan amanah 🤲</p>
+      <p class="foot-sub">Sinkron otomatis antar perangkat · Data tersimpan di server</p>
+    </footer>
+  </div>
+
+  <div id="toast" class="hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
