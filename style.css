@@ -111,3 +111,19 @@ footer { text-align: center; margin-top: 24px; color: var(--muted); font-size: .
   header h1 { font-size: 1.4em; }
   .info-box .value.big { font-size: 1.1em; }
 }
+
+/* ===== Tambahan v1.1: Pengeluaran & QR ===== */
+.value.red { color: var(--danger); }
+.nominal.red { color: var(--danger); }
+.red-text { color: var(--danger) !important; }
+.expense-track { margin-top: 3px; background: #fbeae7; }
+.expense-fill { background: linear-gradient(90deg, #c0392b, #e67e22); }
+
+select { width: 100%; padding: 11px 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: .95em; background: #fbfefc; color: var(--text); }
+select:focus { outline: none; border-color: var(--green); background: #fff; }
+
+.qr-card { text-align: center; border: 1.5px dashed var(--green); background: var(--green-light); }
+.qr-wrap img { max-width: 260px; width: 70%; border-radius: 16px; background: #fff; padding: 10px; box-shadow: 0 4px 16px rgba(7,80,50,.15); }
+.qr-preview { text-align: center; margin-top: 14px; }
+.qr-preview img { max-width: 200px; width: 60%; border-radius: 12px; border: 1.5px solid var(--border); background: #fff; padding: 6px; }
+input[type="file"] { background: #fff; padding: 9px; }
