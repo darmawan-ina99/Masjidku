@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Masjidku 🕌 — Tata Kelola Keuangan & Jadwal Jumat</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <!-- LOADING SCREEN -->
@@ -29,7 +30,7 @@
 
     <nav class="tabs" role="tablist">
       <button class="tab active" role="tab" aria-selected="true" onclick="showTab('beranda',this)">🏠 Beranda</button>
-      <button class="tab" role="tab" aria-selected="false" onclick="showTab('jadwal',this)">📅 Jadwal Jumat</button>
+      <button class="tab" role="tab" aria-selected="false" onclick="showTab('jadwal',this)">📅 Jadwal</button>
       <button class="tab" role="tab" aria-selected="false" onclick="showTab('keuangan',this)">💰 Keuangan</button>
       <button class="tab" role="tab" aria-selected="false" onclick="showTab('admin',this)">🔑 Admin</button>
     </nav>
@@ -38,7 +39,15 @@
     <section id="tab-beranda" class="tab-content active" role="tabpanel">
       <div class="card announcement-card" id="kartu-jumat">
         <h2>📣 Pengumuman Jumat Ini</h2>
-        <div id="jumat-ini"><p class="empty">Belum ada jadwal. Admin dapat menambahkannya di tab Jadwal Jumat.</p></div>
+        <div id="jumat-ini"><p class="empty">Belum ada jadwal. Admin dapat menambahkannya di tab Jadwal.</p></div>
+      </div>
+
+      <div class="card qr-card hidden" id="kartu-qr">
+        <h2>🤲 Donasi untuk Masjid</h2>
+        <div class="qr-wrap">
+          <img id="qr-img" alt="QR Code Donasi" />
+          <p class="hint-text">Scan QR di atas untuk berdonasi. Semua donasi dicatat dan dilaporkan secara transparan.</p>
+        </div>
       </div>
 
       <div class="card">
@@ -51,11 +60,12 @@
       </div>
 
       <div class="card">
-        <h2>📊 Ringkasan Keuangan (Infaq & Shodaqoh Jumat)</h2>
+        <h2>📊 Ringkasan Keuangan</h2>
         <div class="info-grid">
           <div class="info-box"><span class="label">Total Infaq</span><span class="value green" id="info-infaq">Rp 0</span></div>
           <div class="info-box"><span class="label">Total Shodaqoh</span><span class="value green" id="info-shodaqoh">Rp 0</span></div>
-          <div class="info-box wide"><span class="label">Total Keseluruhan</span><span class="value green big" id="info-total">Rp 0</span></div>
+          <div class="info-box"><span class="label">Total Pengeluaran</span><span class="value red" id="info-pengeluaran">Rp 0</span></div>
+          <div class="info-box"><span class="label">Saldo Kas</span><span class="value big" id="info-saldo">Rp 0</span></div>
         </div>
         <p class="hint-text" id="info-jumlah-jumat">Belum ada catatan Jumat</p>
       </div>
@@ -84,6 +94,12 @@
 
     <!-- KEUANGAN -->
     <section id="tab-keuangan" class="tab-content" role="tabpanel">
+      <div class="card">
+        <h2>📄 Laporan</h2>
+        <p class="hint-text" style="text-align:left">Unduh laporan keuangan lengkap (pendapatan Jumat, pengeluaran, saldo) dalam format PDF.</p>
+        <button type="button" class="btn-primary" onclick="unduhPDF()">📄 Unduh Laporan PDF</button>
+      </div>
+
       <div id="form-infaq-admin" class="card admin-form hidden">
         <h2>➕ Catat Pendapatan Jumat</h2>
         <label for="infaq-tanggal">Tanggal Jumat</label>
@@ -97,14 +113,39 @@
         <button type="button" class="btn-primary" onclick="simpanInfaq()">💾 Simpan Catatan</button>
       </div>
 
+      <div id="form-pengeluaran-admin" class="card admin-form hidden">
+        <h2>➖ Catat Pengeluaran</h2>
+        <label for="peng-tanggal">Tanggal</label>
+        <input type="date" id="peng-tanggal" />
+        <label for="peng-kategori">Kategori</label>
+        <select id="peng-kategori">
+          <option value="Perlengkapan Masjid">Perlengkapan Masjid</option>
+          <option value="Honor Marbot">Honor Marbot</option>
+          <option value="Listrik & Air">Listrik & Air</option>
+          <option value="Perawatan & Renovasi">Perawatan & Renovasi</option>
+          <option value="Kegiatan & Kajian">Kegiatan & Kajian</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+        <label for="peng-keterangan">Keterangan</label>
+        <input type="text" id="peng-keterangan" placeholder="Contoh: beli karpet baru masjid" />
+        <label for="peng-nominal">Nominal (Rp)</label>
+        <input type="number" id="peng-nominal" placeholder="150000" min="0" />
+        <button type="button" class="btn-primary" onclick="simpanPengeluaran()">💾 Simpan Pengeluaran</button>
+      </div>
+
       <div class="card">
-        <h2>💰 Rekap per Bulan</h2>
+        <h2>📊 Rekap per Bulan</h2>
         <div id="rekap-bulanan"><p class="empty">Memuat...</p></div>
       </div>
 
       <div class="card">
         <h2>📋 Riwayat Pendapatan Jumat</h2>
         <div id="list-infaq"><p class="empty">Memuat...</p></div>
+      </div>
+
+      <div class="card">
+        <h2>🧾 Riwayat Pengeluaran</h2>
+        <div id="list-pengeluaran"><p class="empty">Memuat...</p></div>
       </div>
     </section>
 
@@ -118,18 +159,31 @@
         <p class="error-text hidden" id="login-error">PIN salah, coba lagi.</p>
       </div>
 
-      <div class="card hidden" id="card-setting">
-        <h2>⚙️ Pengaturan Masjid</h2>
-        <label for="set-nama">Nama Masjid</label>
-        <input type="text" id="set-nama" placeholder="Contoh: Masjid Al-Ikhlas" />
-        <label for="set-alamat">Alamat</label>
-        <input type="text" id="set-alamat" placeholder="Contoh: Jl. Mesjid No. 10, Desa Sriamur" />
-        <label for="set-marbot">Nama Marbot</label>
-        <input type="text" id="set-marbot" placeholder="Contoh: Bapak Suharto" />
-        <label for="set-pin-baru">Ganti PIN (opsional, min. 4 angka)</label>
-        <input type="password" id="set-pin-baru" placeholder="Biarkan kosong jika tidak diganti" inputmode="numeric" maxlength="8" />
-        <button type="button" class="btn-primary" onclick="simpanProfil()">💾 Simpan Pengaturan</button>
-        <button type="button" class="btn-secondary" onclick="logoutAdmin()">🚪 Keluar Admin</button>
+      <div class="hidden" id="admin-panel">
+        <div class="card" id="card-setting">
+          <h2>⚙️ Pengaturan Masjid</h2>
+          <label for="set-nama">Nama Masjid</label>
+          <input type="text" id="set-nama" placeholder="Contoh: Masjid Al-Ikhlas" />
+          <label for="set-alamat">Alamat</label>
+          <input type="text" id="set-alamat" placeholder="Contoh: Jl. Mesjid No. 10, Desa Sriamur" />
+          <label for="set-marbot">Nama Marbot</label>
+          <input type="text" id="set-marbot" placeholder="Contoh: Bapak Suharto" />
+          <label for="set-pin-baru">Ganti PIN (opsional, min. 4 angka)</label>
+          <input type="password" id="set-pin-baru" placeholder="Biarkan kosong jika tidak diganti" inputmode="numeric" maxlength="8" />
+          <button type="button" class="btn-primary" onclick="simpanProfil()">💾 Simpan Pengaturan</button>
+          <button type="button" class="btn-secondary" onclick="logoutAdmin()">🚪 Keluar Admin</button>
+        </div>
+
+        <div class="card">
+          <h2>📱 QR Donasi</h2>
+          <p class="hint-text" style="text-align:left">Upload gambar QR code donasi ( hasil screenshot / gambar QRIS ). QR akan tampil di beranda untuk bisa di-scan jamaah.</p>
+          <input type="file" id="qr-file" accept="image/*" />
+          <div id="qr-preview-wrap" class="qr-preview hidden">
+            <img id="qr-preview" alt="Preview QR" />
+          </div>
+          <button type="button" class="btn-primary" onclick="simpanQR()">💾 Simpan QR Donasi</button>
+          <button type="button" class="btn-secondary" onclick="hapusQR()">🗑️ Hapus QR Donasi</button>
+        </div>
       </div>
     </section>
 
